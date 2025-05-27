@@ -27,6 +27,20 @@ const tempNewCard = ref(null)
 const cardsCount = computed(() => props.column.cards.length)
 const isDisabled = computed(() => !props.column.enabled)
 
+const sortButtonSubtext = computed(() => {
+    const sortState = props.column.sort_state
+    if (sortState === 'asc') return 'Ascending'
+    if (sortState === 'desc') return 'Descending'
+    return ''
+})
+
+const sortButtonIcon = computed(() => {
+    const sortState = props.column.sort_state
+    if (sortState === 'asc') return 'sort_asc'
+    if (sortState === 'desc') return 'sort_desc'
+    return 'sort'
+})
+
 const lastEditTimeAgo = useTimeAgo(() => props.column.last_edit, {
     showSecond: false,
     updateInterval: 30000
@@ -47,7 +61,7 @@ const saveTitle = (event) => {
     const newTitle = event.target.textContent.trim()
 
     if (newTitle && newTitle !== originalTitle.value) {
-        kanbanStore.updateColumn(props.index, { title: newTitle })
+        kanbanStore.updateColumn(props.index, { title: newTitle }, true)
         originalTitle.value = newTitle
     } else {
         event.target.textContent = originalTitle.value
@@ -74,9 +88,48 @@ const addNewCard = () => {
     }
 }
 
+const onCardEdit = (isNew) => {
+    if (isNew) {
+        removeTempCard()
+    }
+    if (props.column.sort_state !== null) {
+        kanbanStore.updateColumn(props.index, {
+            sort_state: null
+        })
+    }
+}
+
 const removeTempCard = () => {
     isAddingNewCard.value = false
     tempNewCard.value = null
+}
+
+const sortCards = () => {
+    const currentState = props.column.sort_state
+    const newState = currentState === 'asc' ? 'desc' : 'asc'
+  
+    const sortedCards = [...props.column.cards].sort((a, b) => {
+        const titleA = a.title.toLowerCase()
+        const titleB = b.title.toLowerCase()
+    
+        if (newState === 'asc') {
+            return titleA.localeCompare(titleB)
+        } else {
+            return titleB.localeCompare(titleA)
+        }
+    })
+  
+    kanbanStore.updateColumn(props.index, {
+        cards: sortedCards,
+        sort_state: newState
+    }, true)
+}
+
+const clearCards = () => {
+    kanbanStore.updateColumn(props.index, {
+        cards: [],
+        sort_state: null
+    }, true)
 }
 
 const updateOriginalTitle = () => {
@@ -121,6 +174,7 @@ watch(() => props.column.title, updateOriginalTitle)
                 :card="card"
                 :column-index="index"
                 :card-index="cardIndex"
+                @edit-finish="onCardEdit(false)"
             />
 
             <KanbanCard
@@ -129,7 +183,7 @@ watch(() => props.column.title, updateOriginalTitle)
                 :column-index="index"
                 :card-index="column.cards.length"
                 :is-new="true"
-                @edit-finish="removeTempCard"
+                @edit-finish="onCardEdit(true)"
             />
 
             <ActionButton 
@@ -146,6 +200,20 @@ watch(() => props.column.title, updateOriginalTitle)
 
         </div>
         <div class="column__footer">
+            <ActionButton 
+                :icon="sortButtonIcon"
+                text="Sort"
+                :subtext="sortButtonSubtext"
+                @click="sortCards"
+                :disabled="cardsCount === 0"
+            />
+
+            <ActionButton 
+                icon="clear"
+                text="Clear all"
+                @click="clearCards"
+                :disabled="cardsCount === 0"
+            />
         </div>
     
     </div>

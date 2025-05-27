@@ -67,7 +67,7 @@ const handleClick = (event) => {
         background: #CED9E3;
     }
     &:not(:disabled):active {
-        transform: translate(1px, 1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) inset;
     }
     &_blue {
         background: #CED9E3;

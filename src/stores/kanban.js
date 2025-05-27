@@ -59,12 +59,15 @@ export const useKanbanStore = defineStore('kanban', {
             this.columns.splice(index, 1)
         },
 
-        updateColumn(index, updates) {
+        updateColumn(index, updates, touch) {
             if (this.columns[index]) {
                 this.columns[index] = {
                     ...this.columns[index],
-                    ...updates,
-                    last_edit: Date.now()
+                    ...updates
+                }
+
+                if (touch) {
+                    this.columns[index].last_edit = Date.now()
                 }
             }
         },
