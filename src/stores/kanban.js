@@ -40,7 +40,8 @@ export const useKanbanStore = defineStore('kanban', {
 
     actions: {
         initializeStore() {
-            if (this.columns.length === 0) {
+            const storedData = localStorage.getItem('kanban_columns')
+            if (storedData === null) {
                 this.columns = [...DEFAULT_COLUMNS]
             }
         },
@@ -101,10 +102,10 @@ export const useKanbanStore = defineStore('kanban', {
         key: 'kanban_columns',
         storage: localStorage,
         paths: ['columns'],
-        afterRestore: (ctx) => {
+        /*afterRestore: (ctx) => {
             if (ctx.store.columns.length === 0) {
                 ctx.store.initializeStore()
             }
-        }
+        }*/
     }
 })
