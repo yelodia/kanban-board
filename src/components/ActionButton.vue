@@ -48,9 +48,10 @@ const handleClick = (event) => {
     border: 2px solid rgba(0, 0, 0, 0.1);
     background: #fff;
     font-weight: 600;
+    font-size: 13px;
     font-family: "Inter", sans-serif;
     border-radius: 12px;
-    padding: 0 5px;
+    padding: 0 7px;
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -78,7 +79,12 @@ const handleClick = (event) => {
     }
     &_lg {
         height: 32px;
+        min-height: 32px;
         border-radius: 8px;
+    }
+
+    svg {
+        margin-left: -4px;
     }
 }
 </style>

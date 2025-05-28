@@ -1,11 +1,13 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref, nextTick } from 'vue'
 import ActionButton from './components/ActionButton.vue'
 import KanbanColumn from './components/KanbanColumn.vue'
 import { useKanbanStore } from './stores/kanban'
 import { shuffleArray } from './utils/array'
 
 const kanbanStore = useKanbanStore()
+
+const columnsWrapper = ref(null)
 
 onMounted(() => {
 	kanbanStore.initializeStore()
@@ -77,12 +79,23 @@ const toggleEditing = () => {
 	})
 }
 
+const addNewColumn = async () => {
+	kanbanStore.addColumn({ title: 'New Column' })
+	await nextTick()
+
+	const scrollContainer = columnsWrapper.value.parentElement
+    scrollContainer.scrollTo({
+      	left: scrollContainer.scrollWidth,
+      	behavior: 'smooth'
+    })
+}
+
 </script>
 
 <template>
 	<div class="board">
 		<div class="board__columns-layout">
-			<div class="board__columns-wrapper">
+			<div ref="columnsWrapper" class="board__columns-wrapper">
 				<KanbanColumn 
 				v-for="(column, index) in kanbanStore.columns" 
 				:key="index" 
@@ -96,7 +109,7 @@ const toggleEditing = () => {
 				<ActionButton 
 					text="New column" 
 					icon="add" 
-					@click="kanbanStore.addColumn({ title: 'New Column' })" 
+					@click="addNewColumn" 
 				/>
 				<ActionButton 
 					text="Shuffle columns" 
@@ -117,7 +130,7 @@ const toggleEditing = () => {
 					:disabled="kanbanStore.columnsCount == 0"
 				/>
 			</div>
-			<p class="c-grey">Board actions</p>
+			<div class="c-grey board__actions-text">Board Actions</div>
 		</div>
 	</div>
 </template>
@@ -130,11 +143,17 @@ const toggleEditing = () => {
 	overflow: hidden;
 	&__actions {
 		padding: 12px 0 0;
+		height: 86px;
+		background: linear-gradient(to bottom, #fff, #ECEFF2);
 	}
 	&__actions-buttons {
 		display: flex;
 		gap: 5px;
 		justify-content: center;
+	}
+	&__actions-text {
+		margin-top: 8px;
+		font-weight: 500;
 	}
 	&__columns-layout {
 		flex: 1;

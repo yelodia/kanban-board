@@ -42,7 +42,7 @@ const hasChanges = computed(() => {
         currentDescription.value !== originalDescription.value
 })
 
-const isSaveDisabled = computed(() => !hasChanges.value)
+const isSaveDisabled = computed(() => !hasChanges.value && !props.isNew)
 
 const startEditing = (event) => {
     event.preventDefault()
@@ -82,7 +82,7 @@ const handleKeydown = (event) => {
 const saveCard = () => {
     updateCurrentValues()
 
-    const finalTitle = currentTitle.value || 'Add title'
+    const finalTitle = currentTitle.value
     const finalDescription = currentDescription.value || 'Add description'
 
     if (props.isNew) {
@@ -132,7 +132,7 @@ if (props.isNew) {
         @contextmenu="deleteCard"
     >
     
-        <p 
+        <div 
             ref="titleRef" 
             class="card__title" 
             :contenteditable="isEditing" 
@@ -140,9 +140,9 @@ if (props.isNew) {
             @keydown="handleKeydown"
         >
             {{ card.title }}
-        </p>
+        </div>
     
-        <p 
+        <div 
             ref="descRef" 
             class="c-grey" 
             :contenteditable="isEditing" 
@@ -150,9 +150,9 @@ if (props.isNew) {
             @keydown="handleKeydown"
         >
             {{ card.description }}
-        </p>
+        </div>
     
-        <p v-if="isEditing" class="card__buttons">
+        <div v-if="isEditing" class="card__buttons">
             <ActionButton 
                 text="Save changes"
                 icon="apply"
@@ -165,7 +165,7 @@ if (props.isNew) {
                 icon="cancel"
                 @click="cancelEditing" 
             />
-        </p>
+        </div>
     
     </div>
 </template>
@@ -174,18 +174,26 @@ if (props.isNew) {
 .card {
     background-color: #fff;
     border-radius: 8px;
-    padding: 0px 16px;
+    padding: 8px 16px;
     cursor: pointer;
-    border: 2px solid #fff;
     &:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     &_editing {
-        border-color: #007AFF;
+        box-shadow: 0 0 0 2px #007AFF !important;
         cursor: text;
     }
     &__title {
         font-weight: bold;
+    }
+    &__buttons {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    > div {
+        margin: 8px 0;
     }
 }
 </style>

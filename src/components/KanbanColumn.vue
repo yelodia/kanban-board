@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useKanbanStore } from '../stores/kanban'
 import ActionButton from './ActionButton.vue'
 import KanbanCard from './KanbanCard.vue'
@@ -23,6 +23,7 @@ const originalTitle = ref(props.column.title)
 const titleElement = ref(null)
 const isAddingNewCard = ref(false)
 const tempNewCard = ref(null)
+const cardsContainer = ref(null)
 
 const cardsCount = computed(() => props.column.cards.length)
 const isDisabled = computed(() => !props.column.enabled)
@@ -80,12 +81,20 @@ const deleteColumn = () => {
     kanbanStore.deleteColumn(props.index)
 }
 
-const addNewCard = () => {
+const addNewCard = async () => {
     isAddingNewCard.value = true
     tempNewCard.value = {
         title: '',
         description: 'Add description'
     }
+
+    await nextTick()
+    await nextTick()
+
+    cardsContainer.value.scrollTo({
+       top: cardsContainer.value.scrollHeight,
+       behavior: 'smooth'
+    })
 }
 
 const onCardEdit = (isNew) => {
@@ -167,7 +176,7 @@ watch(() => props.column.title, updateOriginalTitle)
                 @click="deleteColumn" 
             />
         </div>
-        <div class="column__content">
+        <div class="column__content" ref="cardsContainer">
             <KanbanCard
                 v-for="(card, cardIndex) in column.cards"
                 :key="cardIndex"
@@ -194,7 +203,7 @@ watch(() => props.column.title, updateOriginalTitle)
                 :disabled="isAddingNewCard" 
             />
 
-            <div v-if="column.last_edit" class="c-grey text-center">
+            <div v-if="column.last_edit" class="c-grey column__timer">
                 Last edit {{ lastEditTimeAgo }}
             </div>
 
@@ -237,7 +246,7 @@ watch(() => props.column.title, updateOriginalTitle)
             right: 0;
             bottom: 0;
             content: "";
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.5);
         }
     }
     &__counter {
@@ -256,7 +265,8 @@ watch(() => props.column.title, updateOriginalTitle)
     }
     &__title {
         text-transform: uppercase;
-        font-size: 12px;
+        font-size: 13px;
+        line-height: 1.2;
         flex: 1;
         overflow-wrap: break-word;
         min-width: 0;
@@ -272,12 +282,12 @@ watch(() => props.column.title, updateOriginalTitle)
     }
     &__header {
         display: flex;
-        padding: 16px;
+        padding: 16px 16px 14px;
         gap: 5px;
     }
     &__content {
         flex: 1;
-        padding: 0 16px;
+        padding: 2px 16px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -286,6 +296,10 @@ watch(() => props.column.title, updateOriginalTitle)
     &__ontop {
         position: relative;
         z-index: 1;
+    }
+    &__timer {
+        text-align: center;
+        margin-top: 5px;
     }
 }
 </style>
