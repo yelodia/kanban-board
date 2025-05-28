@@ -205,7 +205,7 @@ watch(() => props.column.title, updateOriginalTitle)
                 text="Sort"
                 :subtext="sortButtonSubtext"
                 @click="sortCards"
-                :disabled="cardsCount === 0"
+                :disabled="cardsCount < 2"
             />
 
             <ActionButton 
