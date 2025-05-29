@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useKanbanStore } from '../stores/kanban'
 import ActionButton from './ActionButton.vue'
+import { eventBus, EVENTS } from '../utils/eventBus'
 
 // Props
 const props = defineProps({
@@ -37,6 +38,25 @@ const currentDescription = ref(props.card.description || 'Add description')
 const titleRef = ref(null)
 const descRef = ref(null)
 
+const handleReset = (columnIndex) => { // if not undefined, use only for column
+    const needHandle = !columnIndex || columnIndex === props.columnIndex
+    if (isEditing.value && !props.isNew && needHandle) {
+        cancelEditing()
+    }
+}
+
+onMounted(() => {
+    eventBus.on(EVENTS.SHUFFLE_CARDS, handleReset)
+    eventBus.on(EVENTS.SHUFFLE_COLUMNS, handleReset)
+    eventBus.on(EVENTS.SORT_CARDS, handleReset)
+})
+
+onUnmounted(() => {
+    eventBus.off(EVENTS.SHUFFLE_CARDS, handleReset)
+    eventBus.off(EVENTS.SHUFFLE_COLUMNS, handleReset)
+    eventBus.off(EVENTS.SORT_CARDS, handleReset)
+})
+
 const hasChanges = computed(() => {
     return currentTitle.value !== originalTitle.value ||
         currentDescription.value !== originalDescription.value
@@ -60,6 +80,8 @@ const startEditing = (event) => {
 const deleteCard = (event) => {
     if (!isEditing.value) {
         event.preventDefault()
+        //eventBus.off(EVENTS.SHUFFLE_CARDS)
+        //eventBus.off(EVENTS.SORT_CARDS)
         kanbanStore.deleteCard(props.columnIndex, props.cardIndex)
         emit('edit-finish')
     }
@@ -110,8 +132,10 @@ const cancelEditing = () => {
     if (props.isNew) {
         emit('edit-finish')
     } else {
-        currentTitle.value = originalTitle.value
-        currentDescription.value = originalDescription.value
+        currentTitle.value = props.card.title
+        currentDescription.value = props.card.description
+        originalTitle.value = props.card.title
+        originalDescription.value = props.card.description
         titleRef.value.textContent = currentTitle.value
         descRef.value.textContent = currentDescription.value
         isEditing.value = false

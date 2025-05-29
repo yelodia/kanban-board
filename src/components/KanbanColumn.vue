@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useKanbanStore } from '../stores/kanban'
 import ActionButton from './ActionButton.vue'
 import KanbanCard from './KanbanCard.vue'
 import { useTimeAgo } from '@vueuse/core'
+import { eventBus, EVENTS } from '../utils/eventBus'
 
 // Props
 const props = defineProps({
@@ -24,6 +25,16 @@ const titleElement = ref(null)
 const isAddingNewCard = ref(false)
 const tempNewCard = ref(null)
 const cardsContainer = ref(null)
+
+onMounted(() => {
+    eventBus.on(EVENTS.SHUFFLE_COLUMNS, removeTempCard)
+    eventBus.on(EVENTS.SHUFFLE_CARDS, removeTempCard)
+})
+
+onUnmounted(() => {
+    eventBus.off(EVENTS.SHUFFLE_COLUMNS, removeTempCard)
+    eventBus.off(EVENTS.SHUFFLE_CARDS, removeTempCard) 
+})
 
 const cardsCount = computed(() => props.column.cards.length)
 const isDisabled = computed(() => !props.column.enabled)
@@ -114,6 +125,8 @@ const removeTempCard = () => {
 }
 
 const sortCards = () => {
+    eventBus.emit(EVENTS.SORT_CARDS, props.index)
+    
     const currentState = props.column.sort_state
     const newState = currentState === 'asc' ? 'desc' : 'asc'
   

@@ -4,6 +4,7 @@ import ActionButton from './components/ActionButton.vue'
 import KanbanColumn from './components/KanbanColumn.vue'
 import { useKanbanStore } from './stores/kanban'
 import { shuffleArray } from './utils/array'
+import { eventBus, EVENTS } from './utils/eventBus'
 
 const kanbanStore = useKanbanStore()
 
@@ -27,6 +28,8 @@ const hasEnabledColumns = computed(() => {
 })
 
 const shuffleColumns = () => {
+    eventBus.emit(EVENTS.SHUFFLE_COLUMNS)
+
   	const shuffledColumns = shuffleArray(kanbanStore.columns)
   	kanbanStore.$patch({
     	columns: shuffledColumns
@@ -34,6 +37,8 @@ const shuffleColumns = () => {
 }
 
 const shuffleCards = () => {
+    eventBus.emit(EVENTS.SHUFFLE_CARDS)
+    
   	const enabledColumns = kanbanStore.columns
     	.map((col, index) => ({ ...col, originalIndex: index }))
     	.filter(col => col.enabled)
